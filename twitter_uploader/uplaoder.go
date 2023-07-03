@@ -51,7 +51,7 @@ func (u *Uploader) Upload(text string, file []byte, filename string) {
 	path := "https://api.twitter.com/2/tweets"
 
 	t := types[filepath.Ext(filename)]
-	if t != "twee_image" {
+	if t != "tweet_image" {
 		return
 	}
 
