@@ -14,6 +14,8 @@ import (
 	"github.com/dghubble/oauth1"
 )
 
+const BatchSize = 5 * 1024 * 1024
+
 var types = map[string]string{
 	".jpg":  "tweet_image",
 	".jpeg": "tweet_image",
@@ -107,12 +109,11 @@ func (u *Uploader) uploadImage(file []byte, filename string) string {
 }
 
 func createBatches(l int) []int {
-	batchSize := 5 * 1024 * 1024
-	times := l / batchSize
-	reminder := l % batchSize
+	times := l / BatchSize
+	reminder := l % BatchSize
 	batches := make([]int, times)
 	for i := 0; i < times; i++ {
-		batches[i] = batchSize
+		batches[i] = BatchSize
 	}
 	if reminder > 0 {
 		batches = append(batches, reminder)
@@ -124,8 +125,10 @@ func (u *Uploader) uploadVideo(file []byte, filename string) string {
 	mediaID := u.initUpload(len(file))
 	fmt.Println(mediaID)
 
+	start := 0
 	for i, batch := range createBatches(len(file)) {
-		u.appendUpload(file[:batch], filename, i, mediaID)
+		u.appendUpload(file[start:start+batch], filename, i, mediaID)
+		start += batch
 	}
 
 	u.finalizeUpload(mediaID)
